@@ -36,3 +36,17 @@ miniBot/
 
 - Veškeré služby běží v kontejnerech (Docker Compose).
 - Další dokumentace v příslušných složkách.
+# miniBot Frontend
+
+Tento frontend je vytvořen v Reactu (create-react-app, minimal template).
+
+## Struktura
+
+- `src/components/Auth.js` – placeholder pro autentizaci uživatele
+- `src/pages/Dashboard.js` – placeholder pro dashboard (přehled portfolia, P/L, stav botů)
+- `src/App.js` – jednoduché přepínání mezi Auth a Dashboard
+
+## Poznámka
+
+Tento projekt obsahuje pouze základní rozhraní a strukturu dle zadání. Detailní logika zatím není implementována.
+>>>>>>> 7bd730e545dde95831109ab27b09ec37ba1b5787
