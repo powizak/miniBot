@@ -1,0 +1,69 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+    steps:
+      - uses: actions/checkout@v4
+      - name: Nastavení Pythonu
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Instalace závislostí
+        run: pip install -r requirements.txt
+      - name: Spuštění testů (pytest)
+        run: pytest ../backend/tests
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend/app
+    steps:
+      - uses: actions/checkout@v4
+      - name: Nastavení Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Instalace závislostí
+        run: npm ci
+      - name: Build aplikace
+        run: npm run build
+      - name: Spuštění testů (Jest)
+        run: npm test -- --watchAll=false
+
+  # Ukázkový deploy krok (upravit dle potřeby)
+  deploy:
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Přihlášení k Docker Hubu
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build Docker image
+        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/minibot:latest .
+
+      - name: Push Docker image
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/minibot:latest
+
+      - name: Deploy na server přes SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/minibot:latest
+            docker compose -f /cesta/k/docker-compose.yml up -d --remove-orphans

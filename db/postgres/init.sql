@@ -1,0 +1,41 @@
+-- Inicializační skript PostgreSQL pro miniBot
+
+CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(64) UNIQUE NOT NULL,
+    email VARCHAR(128) UNIQUE NOT NULL,
+    password_hash VARCHAR(256) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS bots (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    name VARCHAR(64) NOT NULL,
+    strategy VARCHAR(64) NOT NULL,
+    config JSONB,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS trades (
+    id SERIAL PRIMARY KEY,
+    bot_id INTEGER REFERENCES bots(id) ON DELETE CASCADE,
+    symbol VARCHAR(32) NOT NULL,
+    side VARCHAR(8) NOT NULL, -- buy/sell
+    amount NUMERIC(18,8) NOT NULL,
+    price NUMERIC(18,8) NOT NULL,
+    status VARCHAR(16) NOT NULL,
+    opened_at TIMESTAMP NOT NULL,
+    closed_at TIMESTAMP,
+    profit NUMERIC(18,8),
+    raw_data JSONB
+);
+
+CREATE TABLE IF NOT EXISTS logs (
+    id SERIAL PRIMARY KEY,
+    bot_id INTEGER REFERENCES bots(id) ON DELETE CASCADE,
+    level VARCHAR(16) NOT NULL,
+    message TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

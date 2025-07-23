@@ -1,0 +1,59 @@
+version: "3.9"
+
+# miniBot deployment: backend, frontend, postgres, influxdb
+# All environment variables are loaded from .env
+
+services:
+  backend:
+    build: ./backend
+    env_file: .env
+    ports:
+      - "${BACKEND_PORT}:8000" # Map BACKEND_PORT to container port 8000
+    depends_on:
+      - postgres
+      - influxdb
+    restart: always
+    # FastAPI backend service
+
+  frontend:
+    build: ./frontend
+    env_file: .env
+    ports:
+      - "${FRONTEND_PORT}:3000" # Map FRONTEND_PORT to container port 3000
+    depends_on:
+      - backend
+    restart: always
+    # React frontend served by Nginx
+
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./db/postgres:/var/lib/postgresql/data # Persistent storage
+    restart: always
+    # PostgreSQL database
+
+  influxdb:
+    image: influxdb:2.7
+    environment:
+      INFLUXDB_ORG: ${INFLUXDB_ORG}
+      INFLUXDB_BUCKET: ${INFLUXDB_BUCKET}
+      INFLUXDB_TOKEN: ${INFLUXDB_TOKEN}
+    ports:
+      - "8086:8086"
+    restart: always
+    # InfluxDB time-series database
+    ports:
+      - "8086:8086"
+    volumes:
+      - ./db/influxdb:/var/lib/influxdb2
+    restart: always
+
+networks:
+  default:
+    driver: bridge

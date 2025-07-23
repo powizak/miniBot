@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+pandas
+numpy
+ta-lib
+scikit-learn
+apscheduler
+sqlalchemy
+psycopg2-binary
+influxdb-client
+python-dotenv
+httpx
+tenacity
